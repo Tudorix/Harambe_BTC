@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.opencv.core.Mat;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -22,6 +23,8 @@ public class WebcamOp extends LinearOpMode {
     WebcamName webcamName = null;
     OpenCvWebcam camera = null;
     SamplePipeline samplePipeline;
+
+    Mat SubmersilbeImage = null;
 
     double DetectWidth = 0;
     double DetectHeight = 0;

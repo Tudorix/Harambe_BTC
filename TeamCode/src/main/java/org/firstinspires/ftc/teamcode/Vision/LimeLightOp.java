@@ -21,6 +21,7 @@ public class LimeLightOp extends LinearOpMode {
 
     private Limelight3A limelight;
 
+    Mat SubmersibleImage = null;
     public static int field = 0;
 
     @Override
@@ -42,6 +43,7 @@ public class LimeLightOp extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
+
             LLStatus status = limelight.getStatus();
             telemetry.addData("Name", "%s",
                     status.getName());

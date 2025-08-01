@@ -17,6 +17,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.HardwareClass;
+import org.firstinspires.ftc.teamcode.Threads.Extendo;
 import org.firstinspires.ftc.teamcode.Threads.Servos;
 import org.firstinspires.ftc.teamcode.Threads.Slides;
 import org.firstinspires.ftc.teamcode.pedro.constants.FConstants;
@@ -34,16 +35,17 @@ import java.util.List;
  * @version 2.0, 11/28/2024
  */
 
-@Autonomous(name = "LEFT_4", group = "Examples")
+@Autonomous(name = "KillShot_1_3", group = "Examples")
 public class LEFT_4_SIMPLE extends OpMode {
 
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
+
     private Limelight3A limelight;
 
     Servos servos = null;
     Slides slides = null;
-
+    Extendo extendo = null;
     HardwareClass hardwareClass = null;
 
     public static int smallDelay = 200, bigDealy = 500;
@@ -84,6 +86,7 @@ public class LEFT_4_SIMPLE extends OpMode {
     private final Pose parkPose2 = new Pose(30, 62, Math.toRadians(180));
 
     /* These are our Paths and PathChains that we will define in buildPaths() */
+    private Path scorePreload,grabPickup1, grabPickup2, grabPickup3, scorePickup1, scorePickup2, scorePickup3, park2;
 
     private PathChain grab1 , grab2 , grab3 , parkPath , placeAndTake , takeFisrt, placeP, place1 , place2,place3 , park;
     /** Build the paths for the auto (adds, for example, constant/linear headings while doing paths)
@@ -111,29 +114,31 @@ public class LEFT_4_SIMPLE extends OpMode {
                 .addPath(new BezierLine(new Point(startPose), new Point(scorePose)))
                 .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading())
                 .addParametricCallback(0 , () -> {
-                    servos.outtakePlaceSample();
+
                 })
                 .build();
 
         grab1 = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(scorePose), new Point(pickup1Pose)))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), pickup1Pose.getHeading())
+                .addPath(new BezierLine(new Point(startPose), new Point(pickup1Pose)))
+                .setLinearHeadingInterpolation(startPose.getHeading(), pickup1Pose.getHeading())
+                .addParametricCallback(0 , () -> {
+                    slidesBackInRobot();
+                })
                 .build();
 
         place1 = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(pickup1Pose), new Point(scorePose)))
                 .setLinearHeadingInterpolation(pickup1Pose.getHeading(), scorePose.getHeading())
                 .addParametricCallback(0 , () -> {
-                    servos.outtakePlaceSample();
+
                 })
                 .build();
 
         grab2 = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(scorePose), new Point(pickup2Pose)))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), pickup2Pose.getHeading())
+                .addPath(new BezierLine(new Point(pickup1Pose), new Point(pickup2Pose)))
+                .setLinearHeadingInterpolation(pickup1Pose.getHeading(), pickup2Pose.getHeading())
                 .addParametricCallback(0 , () -> {
-
-
+                    slidesBackInRobot();
                 })
                 .build();
 
@@ -146,10 +151,9 @@ public class LEFT_4_SIMPLE extends OpMode {
                 .build();
 
         grab3 = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(scorePose), new Point(pickup3Pose)))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), pickup3Pose.getHeading())
+                .addPath(new BezierLine(new Point(pickup2Pose), new Point(pickup3Pose)))
+                .setLinearHeadingInterpolation(pickup2Pose.getHeading(), pickup3Pose.getHeading())
                 .addParametricCallback(0 , () -> {
-
 
                 })
                 .build();
@@ -157,18 +161,24 @@ public class LEFT_4_SIMPLE extends OpMode {
         place3 = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(pickup3Pose), new Point(scorePose)))
                 .setLinearHeadingInterpolation(pickup3Pose.getHeading(), scorePose.getHeading())
+                .addParametricCallback(0 , () -> {
+                    slidesBackInRobot();
+                })
                 .build();
 
         park = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(scorePose), new Point(parkPose2)))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), parkPose2.getHeading())
                 .addParametricCallback(0 , () -> {
-
+                    servos.placeInBasket();
+                    slidesBackInRobot();
                 })
+
                 .addPath(new BezierLine(new Point(parkPose2), new Point(parkPose)))
                 .setLinearHeadingInterpolation(parkPose2.getHeading(), parkPose.getHeading())
-                .addParametricCallback(0 , () -> {
 
+                .addParametricCallback(0 , () -> {
+                    servos.outtake();
                 })
                 .build();
 
@@ -177,25 +187,17 @@ public class LEFT_4_SIMPLE extends OpMode {
                 .addPath(new BezierLine(new Point(follower.getPose()), new Point(parkPose2)))
                 .setLinearHeadingInterpolation(follower.getPose().getHeading(), parkPose2.getHeading())
 
-                .addParametricCallback(0 , () -> {
-
-                })
-
-                .addPath(new BezierLine(new Point(parkPose2), new Point(scorePose1)))
-                .setLinearHeadingInterpolation(parkPose2.getHeading(), scorePose1.getHeading())
-
-                .addParametricCallback(0.1 , () -> {
-
-                })
 
                 .addParametricCallback(0.3 , () -> {
-
+                    servos.outtakeVERYDown();
+                    OuttakeSampleSpec();
                 })
 
                 .addPath(new BezierLine(new Point(scorePose1), new Point(parkPose2)))
                 .setLinearHeadingInterpolation(scorePose1.getHeading(), parkPose2.getHeading())
                 .addParametricCallback(0 , () -> {
-
+                    servos.placeInBasket();
+                    slidesBackInRobot();
                 })
 
                 .addPath(new BezierLine(new Point(parkPose2), new Point(parkPose)))
@@ -218,7 +220,8 @@ public class LEFT_4_SIMPLE extends OpMode {
                 .addPath(new BezierCurve(new Point(scorePose), new Point(parkPose2)))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), parkPose2.getHeading())
                 .addParametricCallback(0 , () -> {
-
+                    servos.placeInBasket();
+                    slidesBackInRobot();
                 })
 
                 .addPath(new BezierLine(new Point(parkPose2), new Point(parkPose)))
@@ -236,38 +239,38 @@ public class LEFT_4_SIMPLE extends OpMode {
     public void autonomousPathUpdate() {
         switch (pathState) {
             case 0:
-                outtakePrep();
-                follower.followPath(placeP);
+                OuttakeSample();
+                servos.intakePrep();
+                follower.followPath(grab1);
                 setPathState(1);
                 break;
             case 1:
                if(!follower.isBusy()) {
-                   servos.outtakeReturn();
-                   slidesBackInRobot();
-                   servos.intakeSweep();
-                   follower.followPath(grab1,false);
-                   delay(bigDealy);
-                   servos.intakeIn();
-                   setPathState(2);
+                    takeAndTranfer();
+                    setPathState(2);
                 }
                 break;
             case 2:
                 if(!follower.isBusy()) {
-                    outtakePrep();
-                    follower.followPath(place1,false);
+                    follower.followPath(grab2,false);
+                    takeAndTranfer();
+                    delay(bigDealy);
                     setPathState(3);
                 }
                 break;
             case 3:
                 if(!follower.isBusy()) {
-                    follower.followPath(grab2,false);
+                    slidesBackInRobot();
+                    follower.followPath(grab3,false);
+                    takeAndTranfer();
                     setPathState(4);
                 }
                 break;
             case 4:
                 if(!follower.isBusy()) {
-                    follower.followPath(place2,false);
-                    setPathState(5);
+                    OuttakeSample();
+                    follower.followPath(place3,false);
+                    setPathState(-1);
                 }
                 break;
             case 5:
@@ -278,6 +281,7 @@ public class LEFT_4_SIMPLE extends OpMode {
                 break;
             case 6:
                 if(!follower.isBusy()) {
+
                     follower.followPath(place3,false);
                     setPathState(7);
                 }
@@ -323,11 +327,14 @@ public class LEFT_4_SIMPLE extends OpMode {
 
         servos = Servos.getInstance(hardwareMap,telemetry);
         slides = Slides.getInstance(hardwareMap,telemetry);
+        extendo = Extendo.getInstance(hardwareMap,telemetry);
         hardwareClass = HardwareClass.getInstance(hardwareMap);
 
         slides.setup();
         servos.setup();
-        servos.start();
+        extendo.setup();
+
+
         servos.stop();
 
         hardwareClass.LS.setDirection(DcMotor.Direction.REVERSE);
@@ -382,6 +389,8 @@ public class LEFT_4_SIMPLE extends OpMode {
         double posX = convertToNewRange(x , -16 , 16 , -1.8 , 1.8) * 1.05;
         double posY = convertToNewRange(y , -10 , 10 , 0 , 5.4);
 
+        angle(result);
+
         Pose found = new Pose(follower.getPose().getX() + posY, follower.getPose().getY() - posX, follower.getPose().getHeading());
         PathChain foundPath = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(follower.getPose()), new Point(found)))
@@ -391,21 +400,72 @@ public class LEFT_4_SIMPLE extends OpMode {
         follower.followPath(foundPath,false);
     }
 
+    public void angle(LLResult result){
+        double width = 0 , height = 0;
+        double Mx = -999 , mx = 999, My = -999, my = 999;
+        double i = 0, Iy = 0;
+
+        List<LLResultTypes.ColorResult> colorResults = result.getColorResults();
+        for (LLResultTypes.ColorResult cr : colorResults) {
+            telemetry.addData("corners: ",  cr.getTargetCorners());
+            for(List<Double> point : cr.getTargetCorners()){
+                double x = point.get(0);
+                double y = point.get(1);
+                telemetry.addLine("Corner: " + "X:" + x +"; Y:" + y + "; Index: " + i);
+
+                if(Mx < x){ Mx = x;}
+                if(My < y){ My = y; Iy = i;}
+                if(mx > x) mx = x;
+                if(my > y) my = y;
+                i++;
+            }
+        }
+
+        width = Math.abs(Mx - mx);
+        height = Math.abs(My - my);
+
+
+    }
+
     public double convertToNewRange(double value, double oldMin, double oldMax, double newMin, double newMax){
         return newMin + (value - oldMin) * (newMax - newMin) / (oldMax - oldMin);
     }
 
+    private void takeAndTranfer(){
+        sweep();
+        delay(bigDealy);
+        take();
+        delay(bigDealy);
+        OuttakeSample();
+        servos.intakePrep();
+    }
+
+    private void OuttakeSample(){
+        servos.outtake();
+        slides.setCoefs(0.01,0,0);
+        slides.goToPosition(hardwareClass.HIGH_BASKET);
+    }
+
+    private void OuttakeSampleSpec(){
+        servos.outtakeSpec();
+        slides.setCoefs(0.01,0,0);
+        slides.goToPosition(hardwareClass.HIGH_BASKET);
+    }
+
     private void slidesBackInRobot(){
+        servos.placeInBasket();
         slides.setCoefs(0.002,0,0);
         slides.goToPosition(hardwareClass.IN_ROBOT);
     }
 
-    void outtakePrep(){
+    private void sweep(){
+        servos.intake();
+        extendo.goToPosition(hardwareClass.MAX);
+    }
+
+    private void take(){
         servos.transfer();
-        //delay(70);
-        servos.outtakePrepSample();
-        slides.setCoefs(0.01,0,0);
-        slides.goToPosition(HardwareClass.HIGH_BASKET);
+        extendo.goToPosition(hardwareClass.IN);
     }
 
 }

@@ -26,7 +26,7 @@ public class ColorSenzorThr {
 
     public ColorSenzorThr(HardwareClass hardwareClass, Telemetry telemetry , HardwareMap hardwareMap){
         this.hardwareClass = hardwareClass;
-        this.Yoda = hardwareClass.Yoda;
+        this.Yoda = hardwareClass.IntakeSensor;
     }
 
     public int getColor(){
