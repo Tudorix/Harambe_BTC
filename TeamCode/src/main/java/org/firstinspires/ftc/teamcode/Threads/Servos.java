@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.HardwareClass;
 public class Servos {
 
     //Declarations
-    public Servo ClawIn , ClawOut , IntakeRotate, OuttakeRotate, Specimen, SpecClaw, MobyDick;
+    public Servo ClawIn , ClawOut , IntakeRotate, OuttakeRotate, Specimen, SpecClaw, MobyDick,Pivot;
     public CRServo Sweep;
     public  Servo SpecArm;
     private HardwareClass hardwareClass;
@@ -34,41 +34,64 @@ public class Servos {
         this.OuttakeRotate = hardwareClass.OuttakeRotate;
         this.Sweep = hardwareClass.Sweep;
         this.MobyDick = hardwareClass.MobiDick;
+        this.Pivot = hardwareClass.Pivot;
         this.hardwareClass = hardwareClass;
     }
 
     public void intake(){
         ClawIn.setPosition(hardwareClass.CLAW_IN_OPEN);
         this.IntakeRotate.setPosition(hardwareClass.INTAKE_ROTATION_DOWN);
-        this.Sweep.setPower(hardwareClass.SWEEP_START);
+    }
+
+    public void rotPiv(double poz){
+        Pivot.setPosition(poz);
+    }
+
+    public void intake_OFF(){
+        ClawIn.setPosition(hardwareClass.CLAW_IN_OPEN);
+        this.IntakeRotate.setPosition(hardwareClass.INTAKE_ROTATION_PREP);
     }
 
     public void intakePrep(){
         ClawIn.setPosition(hardwareClass.CLAW_IN_OPEN);
-        this.IntakeRotate.setPosition(hardwareClass.INTAKE_ROTATION_PREP);
-        Sweep.setPower(0);
+        IntakeRotate.setPosition(hardwareClass.INTAKE_ROTATION_PREP);
     }
 
     public void transfer(){
-        Sweep.setPower(0);
-        ClawIn.setPosition(hardwareClass.CLAW_IN_CLOSED);
         IntakeRotate.setPosition(hardwareClass.INTAKE_ROTATION_DOWN);
+        wait(100);
+        ClawIn.setPosition(hardwareClass.CLAW_IN_ADJUST);
+        wait(200);
+        IntakeRotate.setPosition(hardwareClass.INTAKE_ROTATION_UP);
+        Pivot.setPosition(hardwareClass.PIVOT_MAX_RIGHT);
+    }
+
+    public void help(){
+        ClawIn.setPosition(hardwareClass.CLAW_IN_ADJUST);
+        Pivot.setPosition(hardwareClass.PIVOT_MAX_RIGHT);
+    }
+
+    public void invert(){
+        wait(450);
         ClawOut.setPosition(hardwareClass.CLAW_OUT_OPEN);
         OuttakeRotate.setPosition(hardwareClass.OUTTAKE_ROTATION_TAKE);
-        IntakeRotate.setPosition(hardwareClass.INTAKE_ROTATION_UP);
+        ClawIn.setPosition(hardwareClass.CLAW_IN_CLOSED);
+        Pivot.setPosition(hardwareClass.PIVOT_MAX_LEFT);
     }
 
     public void outtake(){
         ClawOut.setPosition(hardwareClass.CLAW_OUT_CLOSED);
-        wait(100);
+        wait(70);
         ClawIn.setPosition(hardwareClass.CLAW_IN_OPEN);
-        wait(100);
+        wait(70);
         OuttakeRotate.setPosition(hardwareClass.OUTTAKE_ROTATION_PLACE);
     }
 
     public void placeInBasket(){
+        OuttakeRotate.setPosition(1);
+        wait(50);
         ClawOut.setPosition(hardwareClass.CLAW_OUT_OPEN);
-        wait(100);
+        wait(180);
         OuttakeRotate.setPosition(hardwareClass.OUTTAKE_ROTATION_VERTICAL);
     }
 

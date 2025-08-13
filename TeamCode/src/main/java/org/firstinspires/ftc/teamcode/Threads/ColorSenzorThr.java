@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Threads;
 
 import com.qualcomm.robotcore.hardware.ColorRangeSensor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -10,7 +11,7 @@ import org.firstinspires.ftc.teamcode.HardwareClass;
 public class ColorSenzorThr {
 
     //Declarations
-    public ColorRangeSensor Yoda;
+    public DistanceSensor Yoda;
     private HardwareClass hardwareClass;
 
     int a  = 1, y = 1 , x = 1 , b = 1;
@@ -33,24 +34,6 @@ public class ColorSenzorThr {
         if(!checkSample_DIST()){
             return -1;
         }
-
-        if(!checkSample_INTENS()){
-            return -1;
-        }
-
-        if(Yoda.red() > Yoda.green() && Yoda.green() - 100 > Yoda.blue() && Yoda.alpha() > 3300){
-            return 3;//YELLOW
-        }
-
-        if(Yoda.blue() > Yoda.green() && Yoda.blue() > Yoda.red()){
-            return 2;//BLUE
-        }
-
-        /*
-        if(Yoda.red() > Yoda.green() && Yoda.red() > Yoda.blue()){
-            return 1;//RED
-        }
-        */
         return 1;
     }
 
@@ -61,12 +44,7 @@ public class ColorSenzorThr {
         return false;
     }
 
-    public boolean checkSample_INTENS(){
-        if(Yoda.alpha() > 500){
-            return true;
-        }
-        return false;
-    }
+
 
     public void wait(int sec){
         try {

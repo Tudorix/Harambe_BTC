@@ -70,6 +70,9 @@ public class Extendo {
     public void goToPosition(double target){
         generalPID.setReference(target);
     }
+    public void setPID(double p , double i, double d){
+        generalPID.setCoefficients(p,i,d);
+    }
 
     public void stop(){
         running = false;

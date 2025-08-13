@@ -5,6 +5,7 @@ import com.pedropathing.localization.Pose;
 import com.pedropathing.pathgen.BezierCurve;
 import com.pedropathing.pathgen.BezierLine;
 import com.pedropathing.pathgen.Path;
+import com.pedropathing.pathgen.PathBuilder;
 import com.pedropathing.pathgen.PathChain;
 import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Constants;
@@ -15,9 +16,7 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.HardwareClass;
 import org.firstinspires.ftc.teamcode.Threads.Extendo;
 import org.firstinspires.ftc.teamcode.Threads.Servos;
@@ -37,8 +36,8 @@ import java.util.List;
  * @version 2.0, 11/28/2024
  */
 
-@Autonomous(name = "6_LEFT_BLUE", group = "Examples")
-public class LEFT_5PLUS extends OpMode {
+@Autonomous(name = "6_LEFT_BLUE_HATZ", group = "Examples")
+public class LEFT_5PLUS_SMECHERIE extends OpMode {
 
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
@@ -104,6 +103,8 @@ public class LEFT_5PLUS extends OpMode {
 
     private final Pose parkPose4 = new Pose(30, 62, Math.toRadians(180));
 
+    Pose takeSample;
+
 
     /* These are our Paths and PathChains that we will define in buildPaths() */
     private Path scorePreload,grabPickup1, grabPickup2, grabPickup3, scorePickup1, scorePickup2, scorePickup3, park2;
@@ -133,41 +134,41 @@ public class LEFT_5PLUS extends OpMode {
         placeP = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(startPose), new Point(scorePose)))
                 .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading())
+                .build();
+
+        grab1 = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(pickup2Pose), new Point(pickup1Pose)))
+                .setLinearHeadingInterpolation(pickup2Pose.getHeading(), pickup1Pose.getHeading())
                 .addParametricCallback(0 , () -> {
+                    servos.placeInBasket();
+                    slidesBackInRobot();
                     extendAndPivot(850 , (float) 0.16);
                 })
                 .build();
 
-        grab1 = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(scorePose), new Point(pickup1Pose)))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), pickup1Pose.getHeading())
-                .addParametricCallback(0 , () -> {
-                    servos.placeInBasket();
-                    slidesBackInRobot();
-                })
-                .build();
-
         place1 = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(pickup1Pose), new Point(scorePose)))
-                .setLinearHeadingInterpolation(pickup1Pose.getHeading(), scorePose.getHeading())
+                .addPath(new BezierLine(new Point(pickup2Pose), new Point(scorePose)))
+                .setLinearHeadingInterpolation(pickup2Pose.getHeading(), scorePose.getHeading())
                 .addParametricCallback(1 , () -> {
                     OuttakeSample();
                 })
                 .build();
 
         grab2 = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(scorePose), new Point(pickup2Pose)))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), pickup2Pose.getHeading())
+                .addPath(new BezierLine(new Point(startPose), new Point(pickup2Pose)))
+                .setLinearHeadingInterpolation(startPose.getHeading(), pickup2Pose.getHeading())
                 .addParametricCallback(0 , () -> {
+                    extendAndPivot(900 , (float) 0.16);
+                })
+                .addParametricCallback(1 , () -> {
                     servos.placeInBasket();
                     slidesBackInRobot();
-                    extendAndPivot(900 , (float) 0.16);
                 })
                 .build();
 
         place2 = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(pickup2Pose), new Point(scorePose)))
-                .setLinearHeadingInterpolation(pickup2Pose.getHeading(), scorePose.getHeading())
+                .addPath(new BezierLine(new Point(pickup1Pose), new Point(scorePose)))
+                .setLinearHeadingInterpolation(pickup1Pose.getHeading(), scorePose.getHeading())
                 .addParametricCallback(1 , () -> {
                     OuttakeSample();
                 })
@@ -244,61 +245,61 @@ public class LEFT_5PLUS extends OpMode {
         switch (pathState) {
             case 0:
                 OuttakeSample();
-                follower.followPath(placeP);
-                setPathState(1);
+                follower.followPath(grab2,false);
+                setPathState(2);
                 break;
             case 1:
                if(!follower.isBusy()) {
-                    follower.followPath(grab1,false);
-                    setPathState(2);
+                   servos.transfer();
+                   delay(200);
+                   servos.invert();
+                   extendo.goToPosition(hardwareClass.IN);
+                   follower.followPath(place1,false);
+                   setPathState(2);
                 }
                 break;
             case 2:
                 if(!follower.isBusy()) {
-                    servos.transfer();
-                    delay(200);
-                    servos.invert();
-                    extendo.goToPosition(hardwareClass.IN);
-                    follower.followPath(place1,false);
+                    follower.followPath(grab1,false);
                     setPathState(3);
                 }
                 break;
             case 3:
-                if(!follower.isBusy()) {
-                    follower.followPath(grab2,false);
-                    setPathState(4);
-                }
-                break;
-            case 4:
                 if(!follower.isBusy()) {
                     servos.transfer();
                     delay(200);
                     servos.invert();
                     extendo.goToPosition(hardwareClass.IN);
                     follower.followPath(place2,false);
+                    setPathState(4);
+                }
+                break;
+            case 4:
+                if(!follower.isBusy()) {
+                    follower.followPath(grab3,true);
                     setPathState(5);
                 }
                 break;
             case 5:
-                if(!follower.isBusy()) {
-                    follower.followPath(grab3,true);
-                    setPathState(6);
-                }
-                break;
-            case 6:
                 if(!follower.isBusy()) {
                     servos.transfer();
                     delay(200);
                     servos.invert();
                     extendo.goToPosition(hardwareClass.IN);
                     follower.followPath(place3,false);
-                    setPathState(7);
+                    setPathState(6);
+                }
+                break;
+            case 6:
+                if(!follower.isBusy()) {
+                    follower.followPath(takeFisrt,true);
+                    setPathState(-1);
                 }
                 break;
             case 7:
                 if(!follower.isBusy()) {
                     follower.followPath(takeFisrt,true);
-                    setPathState(-1);
+                    setPathState(7);
                 }
                 break;
             case 8:
@@ -460,47 +461,64 @@ public class LEFT_5PLUS extends OpMode {
         }
     }
 
+    public void nuAmChefAzi(){
+        LLResult result = limelight.getLatestResult();
+        servos.intakePrep();
+        extendo.goToPosition(200);
+
+        int extendoPose;
+        extendoPose = convertToNewRange(result.getTy() , -16 , 16 , 300 , 1500);
+        int i = 0;
+
+        int rotation;
+        rotation = convertToNewRange(result.getTx() , -23 , 23 , -60 , 60);
+
+        takeSample = new Pose(follower.getPose().getX() + 0.1, follower.getPose().getY() + 0.1, Math.toRadians(rotation));
+
+        placeFOUND = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(follower.getPose()), new Point(takeSample)))
+                .setLinearHeadingInterpolation(follower.getPose().getHeading(), takeSample.getHeading())
+
+                .addParametricCallback(0 , () -> {
+                    extendAndPivot(extendoPose,(float)0.16);
+                })
+                .build();
+
+        servos.transfer();
+        delay(200);
+        servos.invert();
+        extendo.goToPosition(hardwareClass.IN);
+    }
+
     public void find(){
         int v = 1;
         int j = 0;
         while (v == 1){
             j++;
             LLResult result = limelight.getLatestResult();
-            servos.intake();
+            servos.intakePrep();
             extendo.goToPosition(200);
             servos.wait(100);
             if (result.isValid()){
-                double extendoPose;
+                int extendoPose;
+                extendoPose = convertToNewRange(result.getTx() , -23 , 23 , 300 , 1500);
                 int i = 0;
-                result = limelight.getLatestResult();
-                extendoPose = convertToNewRange(result.getTx() , -23 , 23 , 300 , 900);
-                while (result.getTy() < -2 || result.getTy() > 2){
-                    result = limelight.getLatestResult();
-                    Drive(-result.getTy() / 100 * 7);
-                    if((result.getTy() > -2 && result.getTy() < 2) || i > 10000){
-                        break;
-                    }
-                    if(opmodeTimer.getElapsedTimeSeconds() > 28){
-                        setPathState(-1);
-                        break;
-                    }
-                    i++;
-                }
-                Drive(0);
-                if(opmodeTimer.getElapsedTimeSeconds() > 28){
-                    setPathState(-1);
-                    break;
-                }
-                extendoPose = convertToNewRange(result.getTx() , -23 , 23 , 300 , 900);
-                extendo.goToPosition(extendoPose);
-                angle(result);
-                delay(500);
 
-                servos.wait(100);
-                servos.transferSpec();
-                delay(650);
+                Pose takeSample = new Pose(follower.getPose().getX() + 0.1, follower.getPose().getY() + 0.1, Math.toRadians(0));
 
+                placeFOUND = follower.pathBuilder()
+                        .addPath(new BezierLine(new Point(follower.getPose()), new Point(takeSample)))
+                        .setLinearHeadingInterpolation(follower.getPose().getHeading(), takeSample.getHeading())
 
+                        .addParametricCallback(0 , () -> {
+                            extendAndPivot(extendoPose,(float)0.16);
+                        })
+                        .build();
+
+                servos.transfer();
+                delay(200);
+                servos.invert();
+                extendo.goToPosition(hardwareClass.IN);
             }
 
             if(j >= 15){
@@ -538,9 +556,9 @@ public class LEFT_5PLUS extends OpMode {
     }
 
     public void Drive(double power){
-        FLPower = power;
+        FLPower = -power;
         FRPower = -power;
-        BLPower = -power;
+        BLPower = power;
         BRPower = power;
 
         FL.setPower(FLPower);
@@ -549,8 +567,8 @@ public class LEFT_5PLUS extends OpMode {
         BR.setPower(BRPower);
     }
 
-    public double convertToNewRange(double value, double oldMin, double oldMax, double newMin, double newMax){
-        return newMin + (value - oldMin) * (newMax - newMin) / (oldMax - oldMin);
+    public int convertToNewRange(double value, double oldMin, double oldMax, double newMin, double newMax){
+        return (int)(newMin + (value - oldMin) * (newMax - newMin) / (oldMax - oldMin));
     }
 
     private void OuttakeSample(){
