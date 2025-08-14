@@ -250,8 +250,6 @@ public class LEFT_5PLUS_CAMERA extends OpMode {
             case 1:
                if(!follower.isBusy()) {
                    servos.transfer();
-                   servos.invert();
-                   extendo.goToPosition(hardwareClass.IN);
                    //follower.followPath(place1,false);
                    setPathState(-1);
                 }
@@ -483,7 +481,7 @@ public class LEFT_5PLUS_CAMERA extends OpMode {
         extendoPose = convertToNewRange(result.getTy() , 13 , -16 , 0 , 400);
 
         int translate;
-        translate = convertToNewRange(result.getTy() , 5 , -40 , 0 , -16);
+        translate = convertToNewRange(result.getTy() , 5 , -40 , 0 , -13);
         int i = 0;
 
         extendAndPivot(extendoPose,(float)0.16);

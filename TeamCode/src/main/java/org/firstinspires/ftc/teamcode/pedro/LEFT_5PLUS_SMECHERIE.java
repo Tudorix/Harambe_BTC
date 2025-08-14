@@ -81,12 +81,12 @@ public class LEFT_5PLUS_SMECHERIE extends OpMode {
     private final Pose startPose = new Pose(37.5, 11.01, Math.toRadians(90));
 
     /** Scoring Pose of our robot. It is facing the submersible at a -45 degree (315 degree) angle. */
-    private final Pose scorePose = new Pose(17, 19, Math.toRadians(45));
+    private final Pose scorePose = new Pose(16, 20, Math.toRadians(45));
 
     private final Pose scorePose1 = new Pose(17, 20, Math.toRadians(45));
 
     /** Lowest (First) Sample from the Spike Mark */
-    private final Pose pickup1Pose = new Pose(17, 22.5, Math.toRadians(64));
+    private final Pose pickup1Pose = new Pose(18, 22.5, Math.toRadians(65));
 
     /** Middle (Second) Sample from the Spike Mark */
     private final Pose pickup2Pose = new Pose(16.4, 22.5, Math.toRadians(95));
@@ -95,7 +95,7 @@ public class LEFT_5PLUS_SMECHERIE extends OpMode {
     private final Pose pickup3Pose = new Pose(16, 24.5, Math.toRadians(118));
 
     /** Park Pose for our robot, after we do all of the scoring. */
-    private final Pose parkPose = new Pose(47, 68, Math.toRadians(0));
+    private final Pose parkPose = new Pose(51, 72, Math.toRadians(0));
 
     private final Pose parkPose2 = new Pose(30, 60, Math.toRadians(0));
 
@@ -180,7 +180,7 @@ public class LEFT_5PLUS_SMECHERIE extends OpMode {
                 .addParametricCallback(0 , () -> {
                     servos.placeInBasket();
                     slidesBackInRobot();
-                    extendAndPivot(900 , (float) 0.16);
+                    extendAndPivot(850 , (float) 0.16);
                     //servos.ClawIn.setPosition(hardwareClass.CLAW_IN_CLOSED_PART);
                 })
                 .build();
@@ -210,19 +210,20 @@ public class LEFT_5PLUS_SMECHERIE extends OpMode {
                 .setLinearHeadingInterpolation(follower.getPose().getHeading(), parkPose2.getHeading())
 
                 .addParametricCallback(0 , () -> {
-
+                    servos.invert();
+                    extendo.goToPosition(hardwareClass.IN);
                 })
 
                 .addPath(new BezierLine(new Point(parkPose2), new Point(scorePose)))
                 .setLinearHeadingInterpolation(parkPose2.getHeading(), scorePose.getHeading())
-
-                .addParametricCallback(0.1 , () -> {
-
-                })
-
                 .addParametricCallback(0.3 , () -> {
                     OuttakeSample();
                 })
+                .addParametricCallback(1 , () -> {
+                    servos.placeInBasket();
+                    slidesBackInRobot();
+                })
+
                 .build();
 
         takeFisrt = follower.pathBuilder()
@@ -281,7 +282,7 @@ public class LEFT_5PLUS_SMECHERIE extends OpMode {
                 break;
             case 5:
                 if(!follower.isBusy()) {
-                    servos.transfer();
+                    servos.transfer2();
                     servos.invert();
                     extendo.goToPosition(hardwareClass.IN);
                     follower.followPath(place3,false);
@@ -291,45 +292,39 @@ public class LEFT_5PLUS_SMECHERIE extends OpMode {
             case 6:
                 if(!follower.isBusy()) {
                     follower.followPath(takeFisrt,true);
-                    setPathState(-1);
+                    setPathState(7);
                 }
                 break;
             case 7:
                 if(!follower.isBusy()) {
-                    follower.followPath(takeFisrt,true);
-                    setPathState(7);
+                    nuAmChefAzi2();
+                    setPathState(8);
                 }
                 break;
             case 8:
                 if(!follower.isBusy()) {
-                    find();
+                    servos.transfer();
+                    follower.followPath(placeFOUND);
                     setPathState(9);
                 }
                 break;
             case 9:
                 if(!follower.isBusy()) {
-                    servos.camIn();
-                    extendo.goToPosition(hardwareClass.IN);
-                    follower.followPath(placeFOUND);
-                    int i = 10;
-                    if(opmodeTimer.getElapsedTimeSeconds() > 24){
-                        i = 14;
-                    }
-                    setPathState(i);
+                    follower.followPath(takeFisrt,true);
+                    setPathState(10);
                 }
                 break;
             case 10:
                 if(!follower.isBusy()) {
-                    servos.placeInBasket();
-                    slidesBackInRobot();
-                    follower.followPath(takeFisrt,true);
+                    nuAmChefAzi2();
                     setPathState(11);
                 }
                 break;
             case 11:
                 if(!follower.isBusy()) {
-                    find();
-                    setPathState(12);
+                    servos.transfer();
+                    follower.followPath(placeFOUND);
+                    setPathState(-1);
                 }
                 break;
             case 12:
@@ -412,15 +407,15 @@ public class LEFT_5PLUS_SMECHERIE extends OpMode {
 
         hardwareClass.LS.setDirection(DcMotor.Direction.REVERSE);
 
-        //limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
         telemetry.setMsTransmissionInterval(11);
 
-        //limelight.pipelineSwitch(0);
+        limelight.pipelineSwitch(0);
 
-        //limelight.start();
+        limelight.start();
 
-        //telemetry.addLine("Limelight :" + limelight.getConnectionInfo());
+        telemetry.addLine("Limelight :" + limelight.getConnectionInfo());
         Constants.setConstants(FConstants.class, LConstants.class);
         follower = new Follower(hardwareMap);
         follower.setStartingPose(startPose);
@@ -457,6 +452,30 @@ public class LEFT_5PLUS_SMECHERIE extends OpMode {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void nuAmChefAzi2(){
+        LLResult result = limelight.getLatestResult();
+        servos.intakePrep();
+        extendo.goToPosition(200);
+
+        int extendoPose;
+        extendoPose = convertToNewRange(result.getTy() , 13 , -16 , 50 , 600);
+
+        int translate;
+        translate = convertToNewRange(result.getTy() , 5 , -40 , 0 , -10);
+        int i = 0;
+
+        extendAndPivot(extendoPose,(float)0.16);
+        Pose tarnslatePose = new Pose(50 + 1, 68 + translate, Math.toRadians(0));
+
+        PathChain boom = follower.pathBuilder()
+                .addPath(new BezierCurve(new Point(parkPose), new Point(tarnslatePose)))
+                .setLinearHeadingInterpolation(parkPose.getHeading(), tarnslatePose.getHeading())
+
+                .build();
+
+        follower.followPath(boom,false);
     }
 
     public void nuAmChefAzi(){
