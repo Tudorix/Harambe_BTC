@@ -58,12 +58,12 @@ public class HardwareClass {
 
     public double MD_OUT = 1 ,MD_IN = 0;
     // Intake rotation
-    public double INTAKE_ROTATION_DOWN = 0.41 , INTAKE_ROTATION_UP = 0.95  , INTAKE_ROTATION_PREP = 0.53,INTAKE_ROTATION_SEE = 0.39;
+    public double INTAKE_ROTATION_DOWN = 0.13 , INTAKE_ROTATION_UP = 0.73  , INTAKE_ROTATION_PREP = 0.35,INTAKE_ROTATION_SEE = 0.39;
     public double OUTTAKE_ROTATION_TAKE = 0.3, OUTTAKE_ROTATION_PLACE = 0.8, OUTTAKE_ROTATION_VERTICAL = 0.7 , OUTTAKE_ROTATION_SPEC = 0.9   , OUTTAKE_ROTATION_HIGH_VERT = 0.62,OUTTAKE_ROTATION_TAKE_LOW = 0.04;
     public double SWEEP_START = -1;
     // Intake Pivot
     public double CLAW_OUT_CLOSED = 0.75,CLAW_OUT_OPEN = 0.41, CLAW_OUT_SPEC = 0.57;
-    public double CLAW_IN_CLOSED = 0.35 ,CLAW_IN_OPEN = 0.7 , CLAW_IN_ADJUST = 0.4;
+    public double CLAW_IN_CLOSED = 0.68 ,CLAW_IN_OPEN = 0.1 , CLAW_IN_ADJUST = 0.6, CLAW_IN_CLOSED_PART = 0.4;
 
     // Outtake claw rotation
 

@@ -5,7 +5,6 @@ import com.pedropathing.localization.Pose;
 import com.pedropathing.pathgen.BezierCurve;
 import com.pedropathing.pathgen.BezierLine;
 import com.pedropathing.pathgen.Path;
-import com.pedropathing.pathgen.PathBuilder;
 import com.pedropathing.pathgen.PathChain;
 import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Constants;
@@ -36,8 +35,8 @@ import java.util.List;
  * @version 2.0, 11/28/2024
  */
 
-@Autonomous(name = "6_LEFT_BLUE_HATZ", group = "Examples")
-public class LEFT_5PLUS_SMECHERIE extends OpMode {
+@Autonomous(name = "CAMERA", group = "Examples")
+public class LEFT_5PLUS_CAMERA extends OpMode {
 
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
@@ -78,15 +77,15 @@ public class LEFT_5PLUS_SMECHERIE extends OpMode {
      * Lets assume the Robot is facing the human player and we want to score in the bucket */
 
     /** Start Pose of our robot */
-    private final Pose startPose = new Pose(37.5, 11.01, Math.toRadians(90));
+    private final Pose startPose = new Pose(37.5, 11.01, Math.toRadians(0));
 
     /** Scoring Pose of our robot. It is facing the submersible at a -45 degree (315 degree) angle. */
-    private final Pose scorePose = new Pose(17, 19, Math.toRadians(45));
+    private final Pose scorePose = new Pose(16.5, 20, Math.toRadians(45));
 
     private final Pose scorePose1 = new Pose(17, 20, Math.toRadians(45));
 
     /** Lowest (First) Sample from the Spike Mark */
-    private final Pose pickup1Pose = new Pose(17, 22.5, Math.toRadians(64));
+    private final Pose pickup1Pose = new Pose(17, 22.5, Math.toRadians(65));
 
     /** Middle (Second) Sample from the Spike Mark */
     private final Pose pickup2Pose = new Pose(16.4, 22.5, Math.toRadians(95));
@@ -245,8 +244,7 @@ public class LEFT_5PLUS_SMECHERIE extends OpMode {
     public void autonomousPathUpdate() {
         switch (pathState) {
             case 0:
-                OuttakeSample();
-                follower.followPath(grab2,false);
+                nuAmChefAzi2();
                 setPathState(1);
                 break;
             case 1:
@@ -254,8 +252,8 @@ public class LEFT_5PLUS_SMECHERIE extends OpMode {
                    servos.transfer();
                    servos.invert();
                    extendo.goToPosition(hardwareClass.IN);
-                   follower.followPath(place1,false);
-                   setPathState(2);
+                   //follower.followPath(place1,false);
+                   setPathState(-1);
                 }
                 break;
             case 2:
@@ -412,18 +410,18 @@ public class LEFT_5PLUS_SMECHERIE extends OpMode {
 
         hardwareClass.LS.setDirection(DcMotor.Direction.REVERSE);
 
-        //limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
         telemetry.setMsTransmissionInterval(11);
 
-        //limelight.pipelineSwitch(0);
+        limelight.pipelineSwitch(0);
 
-        //limelight.start();
+        limelight.start();
 
         //telemetry.addLine("Limelight :" + limelight.getConnectionInfo());
         Constants.setConstants(FConstants.class, LConstants.class);
         follower = new Follower(hardwareMap);
-        follower.setStartingPose(startPose);
+        follower.setStartingPose(parkPose);
         buildPaths();
     }
 
@@ -465,27 +463,39 @@ public class LEFT_5PLUS_SMECHERIE extends OpMode {
         extendo.goToPosition(200);
 
         int extendoPose;
-        extendoPose = convertToNewRange(result.getTy() , -16 , 16 , 300 , 1500);
+        extendoPose = convertToNewRange(result.getTy() , 13 , -16 , 0 , 1000);
+        int i = 0;
+        while (i < 5000){
+            result = limelight.getLatestResult();
+            Drive(result.getTy() / 30);
+            i++;
+        }
+
+        extendAndPivot(extendoPose,(float)0.16);
+    }
+
+    public void nuAmChefAzi2(){
+        LLResult result = limelight.getLatestResult();
+        servos.intakePrep();
+        extendo.goToPosition(200);
+
+        int extendoPose;
+        extendoPose = convertToNewRange(result.getTy() , 13 , -16 , 0 , 400);
+
+        int translate;
+        translate = convertToNewRange(result.getTy() , 5 , -40 , 0 , -16);
         int i = 0;
 
-        int rotation;
-        rotation = convertToNewRange(result.getTx() , -23 , 23 , -60 , 60);
+        extendAndPivot(extendoPose,(float)0.16);
+        Pose tarnslatePose = new Pose(47 + 1, 68 + translate, Math.toRadians(0));
 
-        takeSample = new Pose(follower.getPose().getX() + 0.1, follower.getPose().getY() + 0.1, Math.toRadians(rotation));
+        PathChain boom = follower.pathBuilder()
+                .addPath(new BezierCurve(new Point(parkPose), new Point(tarnslatePose)))
+                .setLinearHeadingInterpolation(parkPose.getHeading(), tarnslatePose.getHeading())
 
-        placeFOUND = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(follower.getPose()), new Point(takeSample)))
-                .setLinearHeadingInterpolation(follower.getPose().getHeading(), takeSample.getHeading())
-
-                .addParametricCallback(0 , () -> {
-                    extendAndPivot(extendoPose,(float)0.16);
-                })
                 .build();
 
-        servos.transfer();
-        delay(200);
-        servos.invert();
-        extendo.goToPosition(hardwareClass.IN);
+        follower.followPath(boom,false);
     }
 
     public void find(){
@@ -554,9 +564,9 @@ public class LEFT_5PLUS_SMECHERIE extends OpMode {
     }
 
     public void Drive(double power){
-        FLPower = -power;
+        FLPower = power;
         FRPower = -power;
-        BLPower = power;
+        BLPower = -power;
         BRPower = power;
 
         FL.setPower(FLPower);

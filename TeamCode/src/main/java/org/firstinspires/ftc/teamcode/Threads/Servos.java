@@ -61,9 +61,11 @@ public class Servos {
         IntakeRotate.setPosition(hardwareClass.INTAKE_ROTATION_DOWN);
         wait(100);
         ClawIn.setPosition(hardwareClass.CLAW_IN_ADJUST);
-        wait(200);
-        IntakeRotate.setPosition(hardwareClass.INTAKE_ROTATION_UP);
+        wait(50);
         Pivot.setPosition(hardwareClass.PIVOT_MAX_RIGHT);
+        wait(100);
+        IntakeRotate.setPosition(hardwareClass.INTAKE_ROTATION_UP);
+        wait(100);
     }
 
     public void help(){
@@ -72,7 +74,7 @@ public class Servos {
     }
 
     public void invert(){
-        wait(450);
+        wait(400);
         ClawOut.setPosition(hardwareClass.CLAW_OUT_OPEN);
         OuttakeRotate.setPosition(hardwareClass.OUTTAKE_ROTATION_TAKE);
         ClawIn.setPosition(hardwareClass.CLAW_IN_CLOSED);

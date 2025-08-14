@@ -226,7 +226,7 @@ public class LEFT_5PLUS extends OpMode {
         takeFisrt = follower.pathBuilder()
                 .addPath(new BezierCurve(new Point(scorePose), new Point(parkPose2)))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), parkPose2.getHeading())
-                .addParametricCallback(0 , () -> {
+                .addParametricCallback(0.1 , () -> {
                     servos.placeInBasket();
                     slidesBackInRobot();
                 })
